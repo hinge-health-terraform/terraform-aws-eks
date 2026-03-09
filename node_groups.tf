@@ -236,7 +236,7 @@ module "fargate_profile" {
   account_id = local.account_id
 
   # Fargate Profile
-  cluster_name      = time_sleep.this[0].triggers["name"]
+  cluster_name      = coalesce(try(time_sleep.this[0].triggers["name"], null), try(time_sleep.this[0].triggers["cluster_name"], null), "")
   cluster_ip_family = var.ip_family
   name              = coalesce(each.value.name, each.key)
   subnet_ids        = coalesce(each.value.subnet_ids, var.subnet_ids)
@@ -280,8 +280,8 @@ module "eks_managed_node_group" {
   partition  = local.partition
   account_id = local.account_id
 
-  cluster_name       = time_sleep.this[0].triggers["name"]
-  kubernetes_version = try(each.value.kubernetes_version, time_sleep.this[0].triggers["kubernetes_version"])
+  cluster_name       = coalesce(try(time_sleep.this[0].triggers["name"], null), try(time_sleep.this[0].triggers["cluster_name"], null), "")
+  kubernetes_version = try(each.value.kubernetes_version, coalesce(try(time_sleep.this[0].triggers["kubernetes_version"], null), try(time_sleep.this[0].triggers["cluster_version"], null), ""))
 
   # EKS Managed Node Group
   name            = coalesce(each.value.name, each.key)
@@ -310,10 +310,10 @@ module "eks_managed_node_group" {
   timeouts             = each.value.timeouts
 
   # User data
-  cluster_endpoint           = try(time_sleep.this[0].triggers["endpoint"], "")
-  cluster_auth_base64        = try(time_sleep.this[0].triggers["certificate_authority_data"], "")
+  cluster_endpoint           = try(coalesce(try(time_sleep.this[0].triggers["endpoint"], null), try(time_sleep.this[0].triggers["cluster_endpoint"], null), ""))
+  cluster_auth_base64        = try(coalesce(try(time_sleep.this[0].triggers["certificate_authority_data"], null), try(time_sleep.this[0].triggers["cluster_certificate_authority_data"], null), ""))
   cluster_ip_family          = var.ip_family
-  cluster_service_cidr       = try(time_sleep.this[0].triggers["service_cidr"], "")
+  cluster_service_cidr       = try(coalesce(try(time_sleep.this[0].triggers["service_cidr"], null), try(time_sleep.this[0].triggers["cluster_service_cidr"], null), ""))
   enable_bootstrap_user_data = each.value.enable_bootstrap_user_data
   pre_bootstrap_user_data    = each.value.pre_bootstrap_user_data
   post_bootstrap_user_data   = each.value.post_bootstrap_user_data
@@ -407,7 +407,7 @@ module "self_managed_node_group" {
   partition  = local.partition
   account_id = local.account_id
 
-  cluster_name = time_sleep.this[0].triggers["name"]
+  cluster_name = coalesce(try(time_sleep.this[0].triggers["name"], null), try(time_sleep.this[0].triggers["cluster_name"], null), "")
 
   # Autoscaling Group
   create_autoscaling_group = each.value.create_autoscaling_group
@@ -453,9 +453,9 @@ module "self_managed_node_group" {
 
   # User data
   ami_type                   = try(each.value.ami_type, null)
-  cluster_endpoint           = try(time_sleep.this[0].triggers["endpoint"], "")
-  cluster_auth_base64        = try(time_sleep.this[0].triggers["certificate_authority_data"], "")
-  cluster_service_cidr       = try(time_sleep.this[0].triggers["service_cidr"], "")
+  cluster_endpoint           = try(coalesce(try(time_sleep.this[0].triggers["endpoint"], null), try(time_sleep.this[0].triggers["cluster_endpoint"], null), ""))
+  cluster_auth_base64        = try(coalesce(try(time_sleep.this[0].triggers["certificate_authority_data"], null), try(time_sleep.this[0].triggers["cluster_certificate_authority_data"], null), ""))
+  cluster_service_cidr       = try(coalesce(try(time_sleep.this[0].triggers["service_cidr"], null), try(time_sleep.this[0].triggers["cluster_service_cidr"], null), ""))
   additional_cluster_dns_ips = try(each.value.additional_cluster_dns_ips, null)
   cluster_ip_family          = var.ip_family
   pre_bootstrap_user_data    = try(each.value.pre_bootstrap_user_data, null)
@@ -479,7 +479,7 @@ module "self_managed_node_group" {
 
   ebs_optimized      = try(each.value.ebs_optimized, null)
   ami_id             = try(each.value.ami_id, null)
-  kubernetes_version = try(each.value.kubernetes_version, time_sleep.this[0].triggers["kubernetes_version"])
+  kubernetes_version = try(each.value.kubernetes_version, coalesce(try(time_sleep.this[0].triggers["kubernetes_version"], null), try(time_sleep.this[0].triggers["cluster_version"], null), ""))
   instance_type      = try(each.value.instance_type, null)
   key_name           = try(each.value.key_name, null)
 
