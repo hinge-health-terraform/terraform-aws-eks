@@ -21,12 +21,6 @@ resource "time_sleep" "this" {
     certificate_authority_data = aws_eks_cluster.this[0].certificate_authority[0].data
   }
 
-  # SC-4210: Ignore trigger key renames from v20→v21 (cluster_name→name, etc.)
-  # to prevent unnecessary time_sleep replace during the EKS module upgrade.
-  # This lifecycle block can be removed once the migration is complete.
-  lifecycle {
-    ignore_changes = [triggers]
-  }
 }
 
 ################################################################################
